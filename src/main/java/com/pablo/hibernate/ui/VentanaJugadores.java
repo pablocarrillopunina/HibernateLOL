@@ -35,29 +35,23 @@ public class VentanaJugadores {
         JButton btnCrear = crearBoton("Crear jugador");
         JButton btnActualizar = crearBoton("Actualizar jugador");
         JButton btnEliminar = crearBoton("Eliminar jugador");
-        JButton btnRefrescar = crearBoton("Refrescar lista");
+        JButton btnVolver = crearBoton("Volver al menú");
 
-        // PANEL DE BOTONES
         JPanel panelBotones = new JPanel(new GridLayout(1, 4, 10, 10));
         panelBotones.setBackground(Color.BLACK);
 
         panelBotones.add(btnCrear);
         panelBotones.add(btnActualizar);
         panelBotones.add(btnEliminar);
-        panelBotones.add(btnRefrescar);
+        panelBotones.add(btnVolver);
 
         frame.add(scroll, BorderLayout.CENTER);
         frame.add(panelBotones, BorderLayout.SOUTH);
 
-        // ACCIONES ===============================
+        // ACCIONES
 
-        // REFRESCAR
-        btnRefrescar.addActionListener(e -> cargarJugadores(modelo));
-
-        // CREAR
         btnCrear.addActionListener(e -> formularioCrear(modelo));
 
-        // ELIMINAR
         btnEliminar.addActionListener(e -> {
             String sel = lista.getSelectedValue();
             if (sel == null) {
@@ -65,13 +59,11 @@ public class VentanaJugadores {
                 return;
             }
 
-            // FIX DEFINITIVO
             int id = Integer.parseInt(sel.substring(0, sel.indexOf(":")).trim());
             service.eliminarJugador(id);
             cargarJugadores(modelo);
         });
 
-        // ACTUALIZAR
         btnActualizar.addActionListener(e -> {
             String sel = lista.getSelectedValue();
             if (sel == null) {
@@ -79,20 +71,29 @@ public class VentanaJugadores {
                 return;
             }
 
-            // FIX DEFINITIVO
             int id = Integer.parseInt(sel.substring(0, sel.indexOf(":")).trim());
             formularioActualizar(id, modelo);
         });
 
-        // CARGAR LISTA AL INICIO
-        cargarJugadores(modelo);
+        // 🔙 VOLVER AL MENÚ
+        btnVolver.addActionListener(e -> {
+            frame.dispose();
 
+            for (Window w : Window.getWindows()) {
+                if (w instanceof JFrame jf &&
+                        "Menú LOL - CRUD Hibernate".equals(jf.getTitle())) {
+                    jf.setVisible(true);
+                    jf.toFront();
+                    break;
+                }
+            }
+        });
+
+        cargarJugadores(modelo);
         frame.setVisible(true);
     }
 
-    // ============================================
-    // MÉTODO: BOTONES ESTILO GAMER
-    // ============================================
+    // BOTÓN ESTILO GAMER
     private JButton crearBoton(String texto) {
         JButton btn = new JButton(texto);
 
@@ -120,9 +121,7 @@ public class VentanaJugadores {
         return btn;
     }
 
-    // ============================================
-    // CARGAR JUGADORES EN LA LISTA
-    // ============================================
+    // CARGAR JUGADORES
     private void cargarJugadores(DefaultListModel<String> modelo) {
         modelo.clear();
         List<Jugador> jugadores = service.listarJugadores();
@@ -132,52 +131,71 @@ public class VentanaJugadores {
         }
     }
 
-    // ============================================
     // FORMULARIO CREAR
-    // ============================================
     private void formularioCrear(DefaultListModel<String> modelo) {
 
         JTextField txtUsuario = new JTextField();
-        JTextField txtPass = new JTextField();
+        JPasswordField txtPass = new JPasswordField();
+
+        JCheckBox chkMostrar = new JCheckBox("Mostrar contraseña");
+        chkMostrar.addActionListener(e -> {
+            if (chkMostrar.isSelected()) {
+                txtPass.setEchoChar((char) 0); // mostrar
+            } else {
+                txtPass.setEchoChar('•'); // ocultar
+            }
+        });
 
         Object[] campos = {
                 "Usuario:", txtUsuario,
-                "Contraseña:", txtPass
+                "Contraseña:", txtPass,
+                "", chkMostrar
         };
 
         int r = JOptionPane.showConfirmDialog(null, campos,
                 "Crear jugador", JOptionPane.OK_CANCEL_OPTION);
 
         if (r == JOptionPane.OK_OPTION) {
+
             if (txtUsuario.getText().isBlank()) {
                 JOptionPane.showMessageDialog(null, "El nombre no puede estar vacío");
                 return;
             }
 
-            service.crearJugador(txtUsuario.getText(), txtPass.getText());
+            service.crearJugador(
+                    txtUsuario.getText(),
+                    new String(txtPass.getPassword())
+            );
+
             cargarJugadores(modelo);
         }
     }
 
-    // ============================================
-// FORMULARIO ACTUALIZAR (con datos cargados)
-// ============================================
+    // FORMULARIO ACTUALIZAR
     private void formularioActualizar(int id, DefaultListModel<String> modelo) {
 
-        // Obtener jugador desde la BD
         Jugador j = service.buscarJugador(id);
         if (j == null) {
             JOptionPane.showMessageDialog(null, "Error: jugador no encontrado");
             return;
         }
 
-        // Campos con valores actuales
         JTextField txtUsuario = new JTextField(j.getUsername());
-        JTextField txtPass = new JTextField(j.getPassword());
+        JPasswordField txtPass = new JPasswordField(j.getPassword());
+
+        JCheckBox chkMostrar = new JCheckBox("Mostrar contraseña");
+        chkMostrar.addActionListener(e -> {
+            if (chkMostrar.isSelected()) {
+                txtPass.setEchoChar((char) 0);
+            } else {
+                txtPass.setEchoChar('•');
+            }
+        });
 
         Object[] campos = {
                 "Nuevo usuario:", txtUsuario,
-                "Nueva contraseña:", txtPass
+                "Nueva contraseña:", txtPass,
+                "", chkMostrar
         };
 
         int r = JOptionPane.showConfirmDialog(null, campos,
@@ -186,7 +204,7 @@ public class VentanaJugadores {
         if (r == JOptionPane.OK_OPTION) {
 
             String nuevoUser = txtUsuario.getText();
-            String nuevaPass = txtPass.getText();
+            String nuevaPass = new String(txtPass.getPassword());
 
             if (nuevoUser.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "El usuario no puede estar vacío");
@@ -197,5 +215,4 @@ public class VentanaJugadores {
             cargarJugadores(modelo);
         }
     }
-
 }

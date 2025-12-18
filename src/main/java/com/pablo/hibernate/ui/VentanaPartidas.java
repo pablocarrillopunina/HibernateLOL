@@ -4,6 +4,8 @@ import com.pablo.hibernate.entity.Partida;
 import com.pablo.hibernate.service.PartidaService;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -15,39 +17,62 @@ public class VentanaPartidas {
     public void mostrar() {
 
         JFrame frame = new JFrame("Registrar / Ver Partidas");
-        frame.setSize(600, 550);
+        frame.setSize(800, 500);
         frame.setLocationRelativeTo(null);
         frame.setLayout(new BorderLayout());
         frame.getContentPane().setBackground(Color.BLACK);
 
-        // ============================
-        // ÁREA DE TEXTO (ESTILO GAMER)
-        // ============================
-        JTextArea area = new JTextArea();
-        area.setEditable(false);
-        area.setBackground(Color.DARK_GRAY);
-        area.setForeground(Color.WHITE);
-        area.setFont(new Font("Consolas", Font.PLAIN, 14));
-        area.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // ======================
+        // TABLA DE PARTIDAS
+        // ======================
+        String[] columnas = {
+                "ID", "Fecha", "Jugador", "Campeón",
+                "Calle", "Resultado", "Asesinatos", "Muertes"
+        };
 
-        JScrollPane scroll = new JScrollPane(area);
+        DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // tabla solo lectura
+            }
+        };
+
+        JTable tabla = new JTable(modelo);
+        tabla.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tabla.setRowHeight(22);
+        tabla.setBackground(Color.DARK_GRAY);
+        tabla.setForeground(Color.WHITE);
+        tabla.setGridColor(Color.RED);
+        tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        tabla.getTableHeader().setBackground(new Color(120, 0, 0));
+        tabla.getTableHeader().setForeground(Color.WHITE);
+
+// 🔹 CENTRAR CONTENIDO DE LA TABLA
+        DefaultTableCellRenderer centrado = new DefaultTableCellRenderer();
+        centrado.setHorizontalAlignment(SwingConstants.CENTER);
+
+        for (int i = 0; i < tabla.getColumnCount(); i++) {
+            tabla.getColumnModel().getColumn(i).setCellRenderer(centrado);
+        }
+
+        JScrollPane scroll = new JScrollPane(tabla);
         scroll.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+
         frame.add(scroll, BorderLayout.CENTER);
 
 
         // ======================
-        // BOTONES (ABAJO)
+        // BOTONES
         // ======================
         JButton btnCrear = crearBoton("Registrar partida");
-        JButton btnRefrescar = crearBoton("Refrescar lista");
+        JButton btnVolver = crearBoton("Volver al menú");
 
-        JPanel panelBotones = new JPanel(new GridLayout(1, 2));
+        JPanel panelBotones = new JPanel(new GridLayout(1, 2, 10, 10));
         panelBotones.setBackground(Color.BLACK);
         panelBotones.add(btnCrear);
-        panelBotones.add(btnRefrescar);
+        panelBotones.add(btnVolver);
 
         frame.add(panelBotones, BorderLayout.SOUTH);
-
 
         // ======================
         // ACCIONES
@@ -55,20 +80,29 @@ public class VentanaPartidas {
 
         btnCrear.addActionListener(e -> {
             new VentanaRegistrarPartida().mostrar();
-            cargarPartidas(area);
+            cargarPartidas(modelo);
         });
 
-        btnRefrescar.addActionListener(e -> cargarPartidas(area));
+        btnVolver.addActionListener(e -> {
+            frame.dispose();
+            for (Window w : Window.getWindows()) {
+                if (w instanceof JFrame jf &&
+                        "Menú LOL - CRUD Hibernate".equals(jf.getTitle())) {
+                    jf.setVisible(true);
+                    jf.toFront();
+                    break;
+                }
+            }
+        });
 
-        // Cargar partidas al inicio
-        cargarPartidas(area);
+        cargarPartidas(modelo);
 
         frame.setVisible(true);
     }
 
-    // ==========================================================
-    // Método para dar estilo gamer a los botones
-    // ==========================================================
+    // ==================================================
+    // ESTILO GAMER BOTONES
+    // ==================================================
     private JButton crearBoton(String texto) {
         JButton btn = new JButton(texto);
 
@@ -96,27 +130,18 @@ public class VentanaPartidas {
         return btn;
     }
 
-    // ==========================================================
-    // MOSTRAR LAS PARTIDAS EN FORMATO BONITO
-    // ==========================================================
-    private void cargarPartidas(JTextArea area) {
+    // ==================================================
+    // CARGAR PARTIDAS EN LA TABLA
+    // ==================================================
+    private void cargarPartidas(DefaultTableModel modelo) {
 
-        area.setText("");
+        modelo.setRowCount(0);
 
         List<Partida> lista = service.listarPartidas();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-        StringBuilder sb = new StringBuilder();
-
         for (Partida p : lista) {
-            sb.append(String.format(
-                    "[ID %d] %s\n" +
-                            "Jugador:   %s\n" +
-                            "Campeón:   %s\n" +
-                            "Calle:     %s\n" +
-                            "Resultado: %s\n" +
-                            "KDA:       %d / %d\n" +
-                            "----------------------------------------------\n\n",
+            modelo.addRow(new Object[]{
                     p.getId(),
                     p.getFecha().format(fmt),
                     p.getJugador().getUsername(),
@@ -125,9 +150,7 @@ public class VentanaPartidas {
                     p.getResultado(),
                     p.getAsesinatos(),
                     p.getMuertes()
-            ));
+            });
         }
-
-        area.setText(sb.toString());
     }
 }

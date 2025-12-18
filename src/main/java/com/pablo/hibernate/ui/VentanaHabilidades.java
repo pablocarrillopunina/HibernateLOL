@@ -36,7 +36,7 @@ public class VentanaHabilidades {
         JButton btnCrear = crearBoton("Crear habilidad");
         JButton btnActualizar = crearBoton("Actualizar");
         JButton btnEliminar = crearBoton("Eliminar");
-        JButton btnRefrescar = crearBoton("Refrescar");
+        JButton btnVolver = crearBoton("Volver al menú");
 
         JPanel panelBotones = new JPanel(new GridLayout(1, 4, 10, 10));
         panelBotones.setBackground(Color.BLACK);
@@ -44,15 +44,14 @@ public class VentanaHabilidades {
         panelBotones.add(btnCrear);
         panelBotones.add(btnActualizar);
         panelBotones.add(btnEliminar);
-        panelBotones.add(btnRefrescar);
+        panelBotones.add(btnVolver);
 
         frame.add(scroll, BorderLayout.CENTER);
         frame.add(panelBotones, BorderLayout.SOUTH);
 
         cargarHabilidades(modelo);
 
-        // ACCIONES
-        btnRefrescar.addActionListener(e -> cargarHabilidades(modelo));
+        // ---------------- ACCIONES ----------------
 
         // CREAR
         btnCrear.addActionListener(e -> formularioCrear(modelo));
@@ -80,6 +79,20 @@ public class VentanaHabilidades {
             formularioActualizar(id, modelo);
         });
 
+        // 🔙 VOLVER AL MENÚ (reutiliza el menú existente)
+        btnVolver.addActionListener(e -> {
+            frame.dispose();
+
+            for (Window w : Window.getWindows()) {
+                if (w instanceof JFrame jf &&
+                        "Menú LOL - CRUD Hibernate".equals(jf.getTitle())) {
+                    jf.setVisible(true);
+                    jf.toFront();
+                    break;
+                }
+            }
+        });
+
         frame.setVisible(true);
     }
 
@@ -88,20 +101,21 @@ public class VentanaHabilidades {
 
         JButton btn = new JButton(texto);
 
-        Color rojo = new Color(179,0,0);
-        Color rojoClaro = new Color(255,51,51);
+        Color rojo = new Color(179, 0, 0);
+        Color rojoClaro = new Color(255, 51, 51);
 
         btn.setBackground(rojo);
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btn.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        btn.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         btn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 btn.setBackground(rojoClaro);
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
                 btn.setBackground(rojo);
@@ -147,8 +161,8 @@ public class VentanaHabilidades {
 
         if (res == JOptionPane.OK_OPTION) {
 
-            if (q.getText().isEmpty() || w.getText().isEmpty() ||
-                    e.getText().isEmpty() || r.getText().isEmpty()) {
+            if (q.getText().isEmpty() || w.getText().isEmpty()
+                    || e.getText().isEmpty() || r.getText().isEmpty()) {
 
                 JOptionPane.showMessageDialog(null,
                         "Todos los campos deben tener texto");
@@ -180,16 +194,21 @@ public class VentanaHabilidades {
 
         if (res == JOptionPane.OK_OPTION) {
 
-            if (q.getText().isEmpty() || w.getText().isEmpty() ||
-                    e.getText().isEmpty() || r.getText().isEmpty()) {
+            if (q.getText().isEmpty() || w.getText().isEmpty()
+                    || e.getText().isEmpty() || r.getText().isEmpty()) {
 
                 JOptionPane.showMessageDialog(null,
                         "Todos los campos deben tener texto");
                 return;
             }
 
-            service.actualizarHabilidad(id,
-                    q.getText(), w.getText(), e.getText(), r.getText());
+            service.actualizarHabilidad(
+                    id,
+                    q.getText(),
+                    w.getText(),
+                    e.getText(),
+                    r.getText()
+            );
 
             cargarHabilidades(modelo);
         }

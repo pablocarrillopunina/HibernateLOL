@@ -35,14 +35,14 @@ public class VentanaTipos {
         JButton btnCrear = crearBoton("Crear tipo");
         JButton btnActualizar = crearBoton("Actualizar tipo");
         JButton btnEliminar = crearBoton("Eliminar tipo");
-        JButton btnRefrescar = crearBoton("Refrescar lista");
+        JButton btnVolver = crearBoton("Volver al menú");
 
         JPanel panelBotones = new JPanel(new GridLayout(1, 4, 10, 10));
         panelBotones.setBackground(Color.BLACK);
         panelBotones.add(btnCrear);
         panelBotones.add(btnActualizar);
         panelBotones.add(btnEliminar);
-        panelBotones.add(btnRefrescar);
+        panelBotones.add(btnVolver);
 
         frame.add(scroll, BorderLayout.CENTER);
         frame.add(panelBotones, BorderLayout.SOUTH);
@@ -50,7 +50,6 @@ public class VentanaTipos {
         cargarTipos(modelo);
 
         // ACCIONES
-        btnRefrescar.addActionListener(e -> cargarTipos(modelo));
 
         btnCrear.addActionListener(e -> formularioCrear(modelo));
 
@@ -73,6 +72,20 @@ public class VentanaTipos {
             }
             int id = Integer.parseInt(sel.split(":")[0]);
             formularioActualizar(id, modelo);
+        });
+
+        // 🔙 VOLVER AL MENÚ (reutiliza el menú existente)
+        btnVolver.addActionListener(e -> {
+            frame.dispose();
+
+            for (Window w : Window.getWindows()) {
+                if (w instanceof JFrame jf &&
+                        "Menú LOL - CRUD Hibernate".equals(jf.getTitle())) {
+                    jf.setVisible(true);
+                    jf.toFront();
+                    break;
+                }
+            }
         });
 
         frame.setVisible(true);

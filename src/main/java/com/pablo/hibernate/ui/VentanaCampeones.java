@@ -82,21 +82,19 @@ public class VentanaCampeones {
         JButton btnCrear = crearBoton("Crear campeón");
         JButton btnActualizar = crearBoton("Actualizar");
         JButton btnEliminar = crearBoton("Eliminar");
-        JButton btnRefrescar = crearBoton("Refrescar");
+        JButton btnVolver = crearBoton("Volver al menú");
 
         JPanel panelBotones = new JPanel(new GridLayout(1, 4, 10, 10));
         panelBotones.setBackground(Color.BLACK);
         panelBotones.add(btnCrear);
         panelBotones.add(btnActualizar);
         panelBotones.add(btnEliminar);
-        panelBotones.add(btnRefrescar);
+        panelBotones.add(btnVolver);
 
         frame.add(scroll, BorderLayout.CENTER);
         frame.add(panelBotones, BorderLayout.SOUTH);
 
         cargarCampeones(modelo);
-
-        btnRefrescar.addActionListener(e -> cargarCampeones(modelo));
 
         btnCrear.addActionListener(e -> formularioCrear(modelo));
 
@@ -118,6 +116,22 @@ public class VentanaCampeones {
             }
             formularioActualizar(sel.getId(), modelo);
         });
+
+        // 🔙 VOLVER AL MENÚ
+        btnVolver.addActionListener(e -> {
+            frame.dispose(); // cierra esta ventana
+
+            for (Window w : Window.getWindows()) {
+                if (w instanceof JFrame jf &&
+                        "Menú LOL - CRUD Hibernate".equals(jf.getTitle())) {
+                    jf.setVisible(true);
+                    jf.toFront();
+                    break;
+                }
+            }
+        });
+
+
 
         frame.setVisible(true);
     }
@@ -206,7 +220,7 @@ public class VentanaCampeones {
         }
     }
 
-    // =========================== ACTUALIZAR (CORREGIDO) ===========================
+    // =========================== ACTUALIZAR ===========================
     private void formularioActualizar(int id, DefaultListModel<Campeon> modelo) {
 
         Campeon c = service.buscarPorId(id);
