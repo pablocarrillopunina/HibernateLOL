@@ -11,7 +11,7 @@ public class CampeonService {
 
     private final CampeonRepository repo = new CampeonRepository();
 
-    // CREAR COMPLETO
+    // ===================== CREAR COMPLETO =====================
     public void crearCampeonCompleto(String nombre, Tipo tipo, Habilidad habilidad,
                                      int vida, int energia, int dFisico, Integer dMagico) {
 
@@ -27,18 +27,25 @@ public class CampeonService {
         repo.save(c);
     }
 
-    // LISTAR
+    // ===================== LISTAR =====================
     public List<Campeon> listarCampeones() {
         return repo.findAll();
     }
 
-    // ELIMINAR
-    public void eliminarCampeon(int id) {
-        Campeon c = repo.findById(id);
-        if (c != null) repo.delete(c);
+    // ===================== BUSCAR POR ID (AÑADIDO) =====================
+    public Campeon buscarPorId(int id) {
+        return repo.findById(id);
     }
 
-    // ACTUALIZAR COMPLETO
+    // ===================== ELIMINAR =====================
+    public void eliminarCampeon(int id) {
+        Campeon c = repo.findById(id);
+        if (c != null) {
+            repo.delete(c);
+        }
+    }
+
+    // ===================== ACTUALIZAR COMPLETO =====================
     public void actualizarCampeonCompleto(int id, String nombre, Tipo tipo, Habilidad habilidad,
                                           int vida, int energia, int dFisico, Integer dMagico) {
 

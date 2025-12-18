@@ -31,19 +31,18 @@ public class VentanaCampeones {
         DefaultListModel<Campeon> modelo = new DefaultListModel<>();
         JList<Campeon> lista = new JList<>(modelo);
 
-        // 🎨 Estilo gamer para la lista
         lista.setBackground(new Color(30, 30, 30));
         lista.setForeground(new Color(255, 230, 200));
         lista.setFont(new Font("Consolas", Font.BOLD, 14));
         lista.setSelectionBackground(new Color(120, 0, 0));
         lista.setSelectionForeground(Color.WHITE);
-        lista.setFixedCellHeight(-1); // permite tarjetas multi-linea
+        lista.setFixedCellHeight(-1);
 
         JScrollPane scroll = new JScrollPane(lista);
         scroll.setBorder(BorderFactory.createLineBorder(new Color(180, 0, 0), 3));
         scroll.getViewport().setBackground(new Color(20, 20, 20));
 
-        // 🎨 Renderer estilo tarjeta LoL
+        // RENDERER
         lista.setCellRenderer((list, c, index, isSelected, cellHasFocus) -> {
 
             JPanel panel = new JPanel();
@@ -80,7 +79,6 @@ public class VentanaCampeones {
             return panel;
         });
 
-        // BOTONES
         JButton btnCrear = crearBoton("Crear campeón");
         JButton btnActualizar = crearBoton("Actualizar");
         JButton btnEliminar = crearBoton("Eliminar");
@@ -98,7 +96,6 @@ public class VentanaCampeones {
 
         cargarCampeones(modelo);
 
-        // ACCIONES
         btnRefrescar.addActionListener(e -> cargarCampeones(modelo));
 
         btnCrear.addActionListener(e -> formularioCrear(modelo));
@@ -125,7 +122,7 @@ public class VentanaCampeones {
         frame.setVisible(true);
     }
 
-    // =========================== BOTÓN ESTILO GAMER ===========================
+    // =========================== BOTÓN ===========================
     private JButton crearBoton(String texto) {
         JButton btn = new JButton(texto);
 
@@ -153,14 +150,14 @@ public class VentanaCampeones {
         return btn;
     }
 
-    // =========================== CARGAR LISTA ===========================
+    // =========================== CARGAR ===========================
     private void cargarCampeones(DefaultListModel<Campeon> modelo) {
         modelo.clear();
         List<Campeon> lista = service.listarCampeones();
         lista.forEach(modelo::addElement);
     }
 
-    // =========================== FORMULARIO CREAR ===========================
+    // =========================== CREAR ===========================
     private void formularioCrear(DefaultListModel<Campeon> modelo) {
 
         JTextField txtNombre = new JTextField();
@@ -190,7 +187,7 @@ public class VentanaCampeones {
 
         if (r == JOptionPane.OK_OPTION) {
 
-            if (txtNombre.getText().isEmpty()) {
+            if (txtNombre.getText().trim().isEmpty()) {
                 JOptionPane.showMessageDialog(null, "El nombre no puede estar vacío");
                 return;
             }
@@ -209,14 +206,16 @@ public class VentanaCampeones {
         }
     }
 
-    // =========================== FORMULARIO ACTUALIZAR ===========================
+    // =========================== ACTUALIZAR (CORREGIDO) ===========================
     private void formularioActualizar(int id, DefaultListModel<Campeon> modelo) {
 
-        JTextField txtNombre = new JTextField();
-        JTextField txtVida = new JTextField();
-        JTextField txtEnergia = new JTextField();
-        JTextField txtFisico = new JTextField();
-        JTextField txtMagico = new JTextField();
+        Campeon c = service.buscarPorId(id);
+
+        JTextField txtNombre = new JTextField(c.getNombre());
+        JTextField txtVida = new JTextField(String.valueOf(c.getVida()));
+        JTextField txtEnergia = new JTextField(String.valueOf(c.getEnergia()));
+        JTextField txtFisico = new JTextField(String.valueOf(c.getdFisico()));
+        JTextField txtMagico = new JTextField(String.valueOf(c.getdMagico()));
 
         JComboBox<Tipo> comboTipo = new JComboBox<>();
         JComboBox<Habilidad> comboHab = new JComboBox<>();
@@ -224,20 +223,28 @@ public class VentanaCampeones {
         tipoService.listarTipos().forEach(comboTipo::addItem);
         habilidadService.listarHabilidades().forEach(comboHab::addItem);
 
+        comboTipo.setSelectedItem(c.getTipo());
+        comboHab.setSelectedItem(c.getHabilidad());
+
         Object[] campos = {
-                "Nuevo nombre:", txtNombre,
-                "Nuevo tipo:", comboTipo,
-                "Nueva habilidad:", comboHab,
-                "Nueva vida:", txtVida,
-                "Nueva energía:", txtEnergia,
-                "Nuevo daño físico:", txtFisico,
-                "Nuevo daño mágico:", txtMagico
+                "Nombre:", txtNombre,
+                "Tipo:", comboTipo,
+                "Habilidad:", comboHab,
+                "Vida:", txtVida,
+                "Energía:", txtEnergia,
+                "Daño físico:", txtFisico,
+                "Daño mágico:", txtMagico
         };
 
         int r = JOptionPane.showConfirmDialog(null, campos,
                 "Actualizar campeón", JOptionPane.OK_CANCEL_OPTION);
 
         if (r == JOptionPane.OK_OPTION) {
+
+            if (txtNombre.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "El nombre no puede estar vacío");
+                return;
+            }
 
             service.actualizarCampeonCompleto(
                     id,
